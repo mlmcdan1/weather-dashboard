@@ -26,6 +26,23 @@ export const fetchAiWeatherAdvice = async (description: string, temp: number) =>
       aiAdvice = aiAdvice.replace(userPrompt, "").trim();
     }
 
+    // ✅ Cut off any extra content after "---"
+    if (aiAdvice.includes("---")) {
+      aiAdvice = aiAdvice.split("---")[0].trim();
+    }
+
+    // ✅ Extract the first valid sentence and avoid prompt repeats with proper typing
+    const adviceSentences: string[] = aiAdvice.split(".").map((sentence: string) => sentence.trim());
+
+    // ✅ Find the first meaningful sentence that doesn't repeat the prompt
+    aiAdvice = adviceSentences.find((sentence: string) => 
+      sentence && !sentence.toLowerCase().includes("the weather is")
+    ) || "No valid advice received.";
+
+    // ✅ Add a period back if needed
+    aiAdvice = aiAdvice.endsWith(".") ? aiAdvice : aiAdvice + ".";
+
+
     console.log("Extracted AI Advice:", aiAdvice);
     return aiAdvice;
 

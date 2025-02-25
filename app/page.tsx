@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchAiWeatherAdvice } from '@/utils/ai';
+import Image from 'next/image';
 
 // Defin typs for weather data
 interface WeatherData {
@@ -33,7 +34,9 @@ const WeatherApp: React.FC = () => {
   const [currentHour, setCurrentHour] = useState<number | null>(null);
 
   useEffect(() => {
-    setCurrentHour(new Date().getHours());
+    if (typeof window !== 'undefined'){
+      setCurrentHour(new Date().getHours());
+    }
   }, []); 
 
   const isNight = currentHour !== null ?  currentHour >= 18 || currentHour < 6 : false;
@@ -45,6 +48,9 @@ const WeatherApp: React.FC = () => {
   const [aiAdvice, setAiAdvice] = useState<string>("Loading AI Advice...");
   useEffect(() => {
     if (weatherData) {
+      console.log("Weather Description for AI:", weatherData.current.weather[0].description);
+      console.log("Temperature for AI:", weatherData.current.temp);
+
       fetchAiWeatherAdvice(weatherData.current.weather[0].description, weatherData.current.temp)
         .then((advice) => setAiAdvice(advice))
         .catch(() => setAiAdvice("No AI advice available."));
@@ -57,10 +63,26 @@ const WeatherApp: React.FC = () => {
       if (!city) return;
   
       // Step 1: Get Latitude & Longitude using Geocoding API
-      const geoResponse = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${city},${stateCode},US&limit=1&appid=${apiKey}`
-      );
+
+      // ✅ Define the API URL for easier logging
+      const apiUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${city},${stateCode},US&limit=1&appid=${apiKey}`;
+
+      // ✅ Add logs to debug the request
+      console.log("API Request URL:", apiUrl); // Log the full API request
+      console.log("Using API Key:", apiKey); // Log the API key being used (just to confirm it's set)
+
+      // ✅ Make the API request
+      const geoResponse = await fetch(apiUrl);
+      console.log("GeoResponse Raw Response:", geoResponse); // Log the raw response
+
       const geoData = await geoResponse.json();
+      console.log("Full GeoData Response:", geoData); // Log the full parsed response
+      console.log("First Item in GeoData:", geoData[0]); // Check the first item
+
+  
+      // debug logs to check the API response
+      console.log("Full GeoData Response:", geoData);
+      console.log("First Item in GeoData", geoData[0]);
   
       if (!geoData || geoData.length === 0) {
         console.error("Invalid city name:", city);
@@ -97,7 +119,7 @@ const WeatherApp: React.FC = () => {
       }
 
       // Extract daily data from 5-day forecast API
-      const dailyDataMap: { [date: string]: any } = {};
+      const dailyDataMap: { [date: string]: {dt: number; temp: { day: number}; weather:  {main: string; description: string }[] } } = {};
 
       forecastData.list.forEach((entry: any) => {
         const date = new Date(entry.dt * 1000).toISOString().split("T")[0]; // Get YYYY-MM-DD format
@@ -113,21 +135,6 @@ const WeatherApp: React.FC = () => {
 
       // Convert to array and get the next 3 days
       const dailyArray = Object.values(dailyDataMap).slice(1, 4);
-
-  
-      // Combine Current & Forecast Data
-      const weatherData = {
-        current: {
-          temp: currentData.main.temp,
-          feels_like: currentData.main.feels_like,
-          humidity: currentData.main.humidity,
-          wind_speed: currentData.wind.speed,
-          weather: currentData.weather,
-        },
-        hourly: forecastData.list.slice(0,6), // Each entry is for every 3 hours
-        daily: dailyArray, // Next 3 days
-        timezone: forecastData.city.timezone,
-      };
   
       setWeatherData((prev) => ({
         ...prev,
@@ -211,7 +218,9 @@ const WeatherApp: React.FC = () => {
 
   const [currentHourTime, setCurrentHourTime] = useState<number>(0);
   useEffect(() => {
-    setCurrentHourTime(new Date().getHours());
+    if (typeof window !== 'undefined') {
+      setCurrentHourTime(new Date().getHours());
+    }
   }, []);
 
   const handleSearch = () => {
@@ -238,10 +247,11 @@ const WeatherApp: React.FC = () => {
         <div className='flex items-center gap-1'>
           <h1 className="text-2xl font-bold">Weather.io</h1>
           {/* Sun Icon */}
-          <img
+          <Image
             src='/images/clear.svg'
             alt='Sun Icon'
-            className='w-8 h-8'
+            width={32}
+            height={32}
           />
         </div>
 
@@ -278,7 +288,7 @@ const WeatherApp: React.FC = () => {
             {/* AI-Generated Advice */}
             {aiAdvice && (
               <div className="text-center text-lg font-semibold bg-gray-800 p-2 rounded-md">
-                <p>{aiAdvice}</p>
+                <p>{aiAdvice.replace(/'/g, "&apos;")}</p>
               </div>
             )}
 
@@ -288,22 +298,26 @@ const WeatherApp: React.FC = () => {
               <p className="text-lg">{weatherData.current.weather[0].description}</p>
            
               {/* Weather Icon*/}
-              <img
-                src={weatherData ? getWeatherIcon(
-                  weatherData.current.weather[0].main, currentHourTime) : "/images/no-result.svg"
-                }
-                alt='Weather Icon'
-                className='mx-auto w-24 h-24'
-              />
-
+              <div className='flex justify-center items-center mt-4'>
+                <Image
+                  src={weatherData ? getWeatherIcon(
+                    weatherData.current.weather[0].main, currentHourTime) : "/images/no-result.svg"
+                  }
+                  alt='Weather Icon'
+                  width={96}
+                  height={96}
+                />
+              </div>
               {/* Display Main Temperature */}
-              <p className="text-2xl">{Math.round(weatherData.current.temp)}°F</p>
+              <p className="text-2xl" suppressHydrationWarning={true}>
+                {Math.round(weatherData.current.temp)}°F
+              </p>
 
               {/* Additional Weather Details */}
               <div className="mt-2 text-lg">
-                <p>Feels Like: {weatherData?.current?.feels_like !== undefined ? `${weatherData.current.feels_like}°F` : "N/A"}</p>
-                <p>Humidity: {weatherData?.current?.humidity !== undefined ? `${weatherData.current.humidity}%` : "N/A"}</p>
-                <p>Wind Speed: {weatherData?.current?.wind_speed !== undefined ? `${weatherData.current.wind_speed} mph` : "N/A"}</p>
+                <p suppressHydrationWarning={true}>Feels Like: {weatherData?.current?.feels_like !== undefined ? `${weatherData.current.feels_like}°F` : "N/A"}</p>
+                <p suppressHydrationWarning={true}>Humidity: {weatherData?.current?.humidity !== undefined ? `${weatherData.current.humidity}%` : "N/A"}</p>
+                <p suppressHydrationWarning={true}>Wind Speed: {weatherData?.current?.wind_speed !== undefined ? `${weatherData.current.wind_speed} mph` : "N/A"}</p>
               </div>
             </section>
 
@@ -313,7 +327,6 @@ const WeatherApp: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 {weatherData.hourly.slice(0, 6).map((hour, index) => {
                   const hourTime = new Date(hour.dt * 1000).getHours();
-                  const isNight = hourTime >= 18 || hourTime < 6; // Determine night/day
 
                   return (
                     <div
@@ -321,7 +334,7 @@ const WeatherApp: React.FC = () => {
                       className="p-4 bg-blue-600 rounded shadow text-center flex flex-col items-center"
                     >
                       {/* Display Hour */}
-                      <p className="text-lg font-medium">
+                      <p className="text-lg font-medium" suppressHydrationWarning={true}>
                         {new Date(hour.dt * 1000).toLocaleTimeString([], {
                           hour: "numeric",
                           minute: "2-digit",
@@ -330,10 +343,11 @@ const WeatherApp: React.FC = () => {
                       </p>
 
                       {/* Display Weather Icon with Night/Day Check */}
-                      <img
+                      <Image
                         src={getWeatherIcon(hour.weather[0].main, hourTime)}
                         alt="Weather Icon"
-                        className="w-10 h-10"
+                        width={40}
+                        height={40}
                       />
 
                       {/* Display Temperature */}
@@ -366,10 +380,11 @@ const WeatherApp: React.FC = () => {
                       <p className="text-lg font-bold">{dayName}</p>
 
                       {/* Weather Icon */}
-                      <img
+                      <Image
                         src={getWeatherIcon(day.weather[0].main, dayHourTime)}
                         alt="Weather Icon"
-                        className="w-10 h-10 mx-auto"
+                        width={40}
+                        height={40}
                       />
 
                       {/* Temperature */}
