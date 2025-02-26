@@ -65,7 +65,7 @@ const WeatherApp: React.FC = () => {
       // Step 1: Get Latitude & Longitude using Geocoding API
 
       // ✅ Define the API URL for easier logging
-      const apiUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${city},${stateCode},US&limit=1&appid=${apiKey}`;
+      const apiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city},${stateCode},US&limit=1&appid=${apiKey}`;
 
       // ✅ Add logs to debug the request
       console.log("API Request URL:", apiUrl); // Log the full API request
