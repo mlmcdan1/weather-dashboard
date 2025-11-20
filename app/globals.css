@@ -2,85 +2,200 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Default Background*/
-.bg-default {
-  background: linear-gradient(to bottom, #87CEEB, #ffffff); /* Light blue to white */
-  background-size: cover;
-  background-repeat: no-repeat;
+:root {
+  color-scheme: dark;
 }
 
-/* Sunny Weather */
-.bg-sunny {
-  background: url('/images/background/sunny-sky.jpg') center/cover no-repeat;
+*::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: #f8fafc;
 }
 
-/* Cloudy */
-.bg-cloudy {
-  background: url('/images/background/cloudy-sky.jpg') center/cover no-repeat;
-}
-
-/* Rainy */
-.bg-rainy {
-  background: url('/images/background/rainy-sky.jpg') center/cover no-repeat;
-  animation: rainEffect 2s linear infinite;
-}
-
-/* Thunderstorm */
-.bg-thunder {
-  position: relative;
-  background: url('/images/background/thunderstorm.jpg') center/cover no-repeat;
-}
-.bg-thunder::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+html,
+body {
   height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  animation: flash 2s infinite;
-}
-
-/* Night Sky */
-.bg-night-sky {
-  background: url('/images/background/night-sky.jpg') center/cover no-repeat;
-}
-
-/* Night Rain */
-.bg-night-rain {
-  background: url('/images/background/night-rain.jpg') center/cover no-repeat;
-  animation: rainEffect 2s linear infinite;
-}
-
-/* Night Thunder */
-.bg-night-thunder {
-  position: relative;
-  background: url('/images/background/night-thunder.jpg') center/cover no-repeat;
-}
-.bg-night-thunder::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  animation: flash 2s infinite;
-}
-
-/* Rain Animation */
-@keyframes rainEffect {
-  0% { background-position: 0 0; }
-  100% { background-position: 100px 100px; }
-}
-
-/* Thunder Flash Effect */
-@keyframes flash {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
 }
 
 body {
-  margin:0;
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(180deg, #101b3a 0%, #0a1230 45%, #040b1d 100%);
+  color: #e2e8f0;
+}
+
+.aurora-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-gradient {
+  position: absolute;
+  inset: -45% -20%;
+  background:
+    radial-gradient(circle at 20% 20%, var(--aurora-color-1, rgba(59, 130, 246, 0.75)), transparent 62%),
+    radial-gradient(circle at 85% 25%, var(--aurora-color-2, rgba(56, 189, 248, 0.65)), transparent 60%),
+    radial-gradient(circle at 50% 75%, var(--aurora-color-3, rgba(236, 72, 153, 0.5)), transparent 65%);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  animation: auroraShift 26s ease-in-out infinite;
+  transition: opacity 0.6s ease, transform 0.8s ease;
+}
+
+.aurora-glow {
+  position: absolute;
+  width: 46vw;
+  height: 46vw;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  animation: auroraPulse 18s ease-in-out infinite;
+}
+
+.aurora-glow-one {
+  top: -12%;
+  left: -10%;
+  background: rgba(56, 189, 248, 0.55);
+}
+
+.aurora-glow-two {
+  bottom: -18%;
+  right: -12%;
+  background: rgba(129, 140, 248, 0.52);
+  animation-delay: -9s;
+}
+
+.aurora-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  mix-blend-mode: screen;
+  background-image: radial-gradient(rgba(248, 250, 252, 0.15) 0.5px, transparent 0.5px);
+  background-size: 110px 110px;
+}
+
+.glass-card {
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(30, 64, 175, 0.18));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 28px 70px -20px rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border 0.35s ease, background 0.35s ease,
+    opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+@keyframes auroraShift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(3%, 4%, 0) rotate(2deg);
+  }
+  100% {
+    transform: translate3d(-2%, 3%, 0) rotate(-2deg);
+  }
+}
+
+@keyframes auroraPulse {
+  0%,
+  100% {
+    transform: scale(0.85) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.05) translate3d(0, -4%, 0);
+  }
+}
+
+.aurora-theme-default {
+  --aurora-color-1: rgba(59, 130, 246, 0.75);
+  --aurora-color-2: rgba(56, 189, 248, 0.6);
+  --aurora-color-3: rgba(236, 72, 153, 0.55);
+}
+
+.aurora-theme-day-clear {
+  --aurora-color-1: rgba(59, 130, 246, 0.78);
+  --aurora-color-2: rgba(96, 165, 250, 0.65);
+  --aurora-color-3: rgba(250, 204, 21, 0.45);
+}
+
+.aurora-theme-day-clouds {
+  --aurora-color-1: rgba(129, 140, 248, 0.7);
+  --aurora-color-2: rgba(96, 165, 250, 0.55);
+  --aurora-color-3: rgba(148, 163, 184, 0.45);
+}
+
+.aurora-theme-day-rain {
+  --aurora-color-1: rgba(56, 189, 248, 0.75);
+  --aurora-color-2: rgba(14, 165, 233, 0.6);
+  --aurora-color-3: rgba(129, 140, 248, 0.45);
+}
+
+.aurora-theme-day-thunder {
+  --aurora-color-1: rgba(147, 197, 253, 0.65);
+  --aurora-color-2: rgba(59, 130, 246, 0.6);
+  --aurora-color-3: rgba(250, 250, 115, 0.4);
+}
+
+.aurora-theme-day-snow {
+  --aurora-color-1: rgba(125, 211, 252, 0.75);
+  --aurora-color-2: rgba(226, 232, 240, 0.55);
+  --aurora-color-3: rgba(148, 163, 184, 0.45);
+}
+
+.aurora-theme-night-base {
+  --aurora-color-1: rgba(79, 70, 229, 0.75);
+  --aurora-color-2: rgba(56, 189, 248, 0.55);
+  --aurora-color-3: rgba(244, 114, 182, 0.48);
+}
+
+.aurora-theme-night-clear {
+  --aurora-color-1: rgba(129, 140, 248, 0.78);
+  --aurora-color-2: rgba(165, 180, 252, 0.52);
+  --aurora-color-3: rgba(56, 189, 248, 0.45);
+}
+
+.aurora-theme-night-clouds {
+  --aurora-color-1: rgba(99, 102, 241, 0.72);
+  --aurora-color-2: rgba(148, 163, 184, 0.5);
+  --aurora-color-3: rgba(2, 132, 199, 0.45);
+}
+
+.aurora-theme-night-rain {
+  --aurora-color-1: rgba(59, 130, 246, 0.7);
+  --aurora-color-2: rgba(14, 116, 144, 0.55);
+  --aurora-color-3: rgba(125, 211, 252, 0.45);
+}
+
+.aurora-theme-night-thunder {
+  --aurora-color-1: rgba(147, 197, 253, 0.6);
+  --aurora-color-2: rgba(99, 102, 241, 0.65);
+  --aurora-color-3: rgba(250, 204, 21, 0.35);
+}
+
+.aurora-theme-night-snow {
+  --aurora-color-1: rgba(191, 219, 254, 0.68);
+  --aurora-color-2: rgba(148, 163, 184, 0.55);
+  --aurora-color-3: rgba(59, 130, 246, 0.45);
+}
+
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
 }
