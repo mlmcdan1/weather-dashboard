@@ -420,7 +420,7 @@ const WeatherApp: React.FC = () => {
       </div>
 
       <div className="relative z-10">
-        <nav className="sticky top-0 z-30 w-full border-b border-white/10 bg-slate-950/65 px-4 py-6 backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/45">
+        <nav className="sticky top-0 inset-x-0 z-30 w-full border-b border-white/10 bg-slate-950/75 px-4 py-6 shadow-lg backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/55 sm:px-6 lg:px-8">
           <header
             className={`mx-auto flex max-w-7xl flex-col gap-6 sm:px-4 transition-all duration-300 ${
               hasSuggestions ? "pb-10" : ""
