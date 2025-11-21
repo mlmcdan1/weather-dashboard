@@ -19,8 +19,14 @@ const HUGGING_FACE_CHAT_COMPLETIONS_URL = `https://router.huggingface.co/hf-infe
   HF_MODEL_ID
 )}/v1/chat/completions`;
 
-const SYSTEM_PROMPT =
-  "You are the user's upbeat best friend who knows the weather. Give one concise tip (25-40 words) about what to wear or do right now, with a tiny nod to later in the day. Stay conversational, no meta talk, no hidden steps, no tags—only the final tip.";
+const SYSTEM_PROMPT = [
+  "You are the user's upbeat best friend who knows the weather.",
+  "Return 2-3 short sentences that read like a quick plan:",
+  "Today: what to do or how it feels now.",
+  "Later: what changes to expect later today.",
+  "Wear: one clear clothing/gear tip.",
+  "Stay under 45 words, no lists, no fluff, no thinking steps, no tags—just the friendly tip.",
+].join(" ");
 
 type ResponseProfile = {
   id: string;
@@ -65,10 +71,12 @@ const cleanAiContent = (input: string) => {
 };
 
 const buildPrompt = (description: string, temp: number, profile: ResponseProfile) =>
-  `Current conditions: ${description || "unknown"}.
-Temperature now: ${Math.round(temp)}°F.
-Style focus: ${profile.instruction}
-Deliver one or two sentences that feel friendly and useful. Cover what to do now and later if the weather shifts.`;
+  [
+    `Current conditions: ${description || "unknown"}.`,
+    `Temperature now: ${Math.round(temp)}°F.`,
+    `Style focus: ${profile.instruction}`,
+    "Answer in the Today / Later / Wear mini-format described in the system prompt.",
+  ].join("\n");
 
 const removeTaggedSections = (text: string, tags: string[]) => {
   return tags.reduce((current, tag) => {
@@ -77,7 +85,11 @@ const removeTaggedSections = (text: string, tags: string[]) => {
   }, text);
 };
 
-const extractAdvice = (userPrompt: string, rawAdvice: string | undefined) => {
+const extractAdvice = (
+  userPrompt: string,
+  rawAdvice: string | undefined,
+  { description, temp }: { description?: string; temp?: number }
+) => {
   if (!rawAdvice) {
     return "No AI advice available.";
   }
@@ -151,7 +163,14 @@ const extractAdvice = (userPrompt: string, rawAdvice: string | undefined) => {
     return fallback.endsWith(".") ? fallback : `${fallback}.`;
   }
 
-  return "No valid advice received.";
+  const safeTemp = Number.isFinite(temp ?? NaN) ? Math.round(temp!) : null;
+  const safeDesc = description?.trim() || "the weather right now";
+  const templated =
+    `Today: ${safeDesc}. ` +
+    `Later: Keep an eye on shifting skies. ` +
+    `Wear: ${safeTemp ? `Layer for around ${safeTemp}°F and keep a light jacket handy.` : "Layer up and keep a light jacket handy."}`;
+
+  return templated.trim();
 };
 
 export async function POST(request: Request) {
@@ -262,7 +281,7 @@ export async function POST(request: Request) {
       providerPayload: data,
     });
 
-    const advice = extractAdvice(userPrompt, rawAdvice);
+    const advice = extractAdvice(userPrompt, rawAdvice, { description, temp });
 
     return NextResponse.json({ advice });
   } catch (error) {
